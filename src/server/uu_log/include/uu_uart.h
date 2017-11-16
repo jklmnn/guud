@@ -5,6 +5,10 @@
 #include <base/component.h>
 #include <base/exception.h>
 #include <base/stdint.h>
+#include <base/heap.h>
+#include <base/allocator_avl.h>
+
+#include <usb/usb.h>
 
 namespace Guud {
     class Uart;
@@ -13,9 +17,19 @@ namespace Guud {
 
 class Guud::Uart
 {
-    public:
-        Uart(Genode::Env &) {}
+    private:
+      
+        Genode::Signal_context_capability _sigc;
+        Genode::Signal_handler<Guud::Uart> _sigh;
+        Genode::Allocator_avl _alloc;
+        Usb::Connection _usb;
+        Usb::Device _device;
 
+        void handle_state_change();
+
+    public:
+        Uart(Genode::Env &, Genode::Allocator &, Genode::Signal_context_capability);
+        
         virtual Genode::size_t tx(const char*) = 0;
 };
 

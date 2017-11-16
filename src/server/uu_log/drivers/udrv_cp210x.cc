@@ -1,8 +1,8 @@
 
 #include <drivers/cp210x.h>
 
-Guud::Cp210x::Cp210x(Genode::Env &env) :
-    Guud::Uart(env)
+Guud::Cp210x::Cp210x(Genode::Env &env, Genode::Allocator &alloc, Genode::Signal_context_capability sigc) :
+    Guud::Uart(env, alloc, sigc)
 {
     
 }

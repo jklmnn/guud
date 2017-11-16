@@ -3,7 +3,8 @@ LIBS += base
 INC_DIR += $(PRG_DIR)/include
 
 SRC_CC = main.cc\
-	 uu_log.cc
+	 uu_log.cc\
+	 uu_uart.cc
 
 SRC_CC += udrv_cp210x.cc
 

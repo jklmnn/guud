@@ -11,7 +11,7 @@ namespace Guud {
 class Guud::Cp210x : public Guud::Uart
 {
     public:
-        Cp210x(Genode::Env &);
+        Cp210x(Genode::Env &, Genode::Allocator &, Genode::Signal_context_capability);
         
         Genode::size_t tx(const char*) override;
 };
