@@ -10,3 +10,11 @@ Guud::Uart::Uart(Genode::Env &env, Genode::Allocator &alloc, Genode::Signal_cont
     _device(&_alloc, _usb, env.ep())
 {
 }
+
+void Guud::Uart::handle_state_change()
+{
+    _device.update_config();
+    Genode::log("State changed: ",
+            Genode::Hex(_device.device_descr.vendor_id), ":",
+            Genode::Hex(_device.device_descr.product_id));
+}
