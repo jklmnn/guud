@@ -18,17 +18,18 @@ namespace Guud {
 class Guud::Uart
 {
     private:
-      
         Genode::Signal_context_capability _sigc;
         Genode::Signal_handler<Guud::Uart> _sigh;
+        Genode::Heap &_heap;
         Genode::Allocator_avl _alloc;
+        
         Usb::Connection _usb;
         Usb::Device _device;
 
         void handle_state_change();
 
     public:
-        Uart(Genode::Env &, Genode::Allocator &, Genode::Signal_context_capability);
+        Uart(Genode::Env &, Genode::Heap &, Genode::Signal_context_capability);
         
         virtual Genode::size_t tx(const char*) = 0;
 };
