@@ -1,0 +1,124 @@
+set use_qemu [have_include "power_on/qemu"]
+
+if {[have_include power_on/qemu]} {
+    if {![info exists ::env(USB_SERIAL_DEVICE)]} {
+        puts "\nPlease define USB_SERIAL_DEVICE environment variable and set it to your USB device <bus.device>\n"
+        exit 0
+    }
+    set usb_serial_device $::env(USB_SERIAL_DEVICE)
+}
+
+#
+# Build
+#
+
+set build_components {
+	core init
+	drivers/timer
+        drivers/usb
+        server/report_rom
+        server/uu_log
+}
+
+source ${genode_dir}/repos/base/run/platform_drv.inc
+append_platform_drv_build_components
+
+build $build_components
+
+create_boot_directory
+
+#
+# Generate config
+#
+
+set config {
+<config verbose="yes">
+	<parent-provides>
+		<service name="ROM"/>
+		<service name="IRQ"/>
+		<service name="IO_MEM"/>
+		<service name="IO_PORT"/>
+		<service name="PD"/>
+		<service name="RM"/>
+		<service name="CPU"/>
+		<service name="LOG"/>
+	</parent-provides>
+	<default-route>
+		<any-service> <parent/> <any-child/> </any-service>
+	</default-route>
+        <default caps="100"/>
+}
+
+append_platform_drv_config
+
+append config {
+	<start name="timer">
+		<resource name="RAM" quantum="1M"/>
+		<provides> <service name="Timer"/> </provides>
+	</start>
+	<start name="report_rom">
+		<resource name="RAM" quantum="1M"/>
+		<provides> <service name="Report"/> <service name="ROM"/> </provides>
+		<config verbose="yes">
+			<default-policy report="usb_drv -> devices"/>
+		</config>
+	</start>
+	<start name="usb_drv" caps="120">
+		<resource name="RAM" quantum="16M"/>
+		<provides> <service name="Usb"/> </provides>
+		<config uhci="yes" ehci="yes" xhci="yes">
+                    <raw>
+                        <report devices="yes"/>
+                        }
+append_if [expr !$use_qemu] config  {
+				<!--
+					The order is important because only the first policy is
+					picked up - an entry may be moved to the front to test the
+					corresponding device.
+                                 -->
+                                <!-- Cygnal Integrated Products, Inc. CP210x UART Bridge / myAVR mySmartUSB light -->
+                                <defailt-policy vendor_id="0x10c4" product_id="0xea60"/>
+}
+append_if $use_qemu config {
+                                <default-policy bus="0x001" dev="0x002"/>
+}
+append config {
+                    </raw>
+		</config>
+		<route>
+			<service name="Report"> <child name="report_rom"/> </service>
+			<any-service> <parent/> <any-child/> </any-service>
+		</route>
+	</start>
+        <start name="uu_log">
+            <resource name="RAM" quantum="8M"/>
+        </start>
+</config>}
+
+install_config $config
+
+#
+# Boot modules
+#
+
+# generic modules
+set boot_modules {
+	core init ld.lib.so
+        timer
+        report_rom
+        usb_drv
+        uu_log
+}
+
+append_platform_drv_boot_modules
+
+build_boot_image $boot_modules
+
+#
+# Qemu opts for EHCI
+#
+append qemu_args "  -nographic"
+#append qemu_args " -device usb-ehci,id=ehci"
+append qemu_args " -usb -usbdevice host:$usb_serial_device"
+
+run_genode_until forever
