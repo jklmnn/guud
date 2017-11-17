@@ -23,10 +23,13 @@ class Guud::Uart
         Genode::Heap &_heap;
         Genode::Allocator_avl _alloc;
         
+        void handle_state_change();
+        virtual bool valid_device(Genode::uint16_t, Genode::uint16_t) = 0;
+        virtual bool initialize() = 0;
+
+    protected:
         Usb::Connection _usb;
         Usb::Device _device;
-
-        void handle_state_change();
 
     public:
         Uart(Genode::Env &, Genode::Heap &, Genode::Signal_context_capability);
