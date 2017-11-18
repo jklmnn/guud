@@ -77,7 +77,7 @@ append_if [expr !$use_qemu] config  {
 					corresponding device.
                                  -->
                                 <!-- Cygnal Integrated Products, Inc. CP210x UART Bridge / myAVR mySmartUSB light -->
-                                <defailt-policy vendor_id="0x10c4" product_id="0xea60"/>
+                                <default-policy vendor_id="0x10c4" product_id="0xea60"/>
 }
 append_if $use_qemu config {
                                 <default-policy bus="0x001" dev="0x002"/>
