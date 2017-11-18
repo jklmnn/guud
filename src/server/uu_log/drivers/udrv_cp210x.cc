@@ -22,29 +22,17 @@ bool Guud::Cp210x::initialize()
     Genode::uint16_t save = 0, test = 0;
     Usb::Interface &iface = _device.interface(0);
     iface.claim();
-    read_reg_16(iface, 4, &save);
+    read_reg<Genode::uint16_t>(iface, 4, &save);
     Genode::log("saved value ", Genode::Hex(save));
-    write_reg_16(iface, 3, 0x800);
-    read_reg_16(iface, 4, &test);
+    write_reg<Genode::uint16_t>(iface, 3, 0x800);
+    read_reg<Genode::uint16_t>(iface, 4, &test);
     Genode::log("tested value ", Genode::Hex(test));
-    write_reg_16(iface, 3, save);
+    write_reg<Genode::uint16_t>(iface, 3, save);
+
+    Genode::uint32_t baud = 0;
+    write_reg<Genode::uint32_t>(iface, 0x1e, 115200);
+    read_reg<Genode::uint32_t>(iface, 0x1d, &baud);
+    Genode::log("baud ", baud);
+
     return true;
 }
-
-void Guud::Cp210x::write_reg_16(Usb::Interface &iface, Genode::uint8_t reg, Genode::uint16_t value, Genode::uint16_t index)
-{
-    Usb::Packet_descriptor packet = iface.alloc(0);
-    Genode::uint8_t type = Usb::ENDPOINT_OUT | Usb::TYPE_VENDOR | Usb::RECIPIENT_DEVICE;
-    iface.control_transfer(packet, type, reg, value, index, 100);
-    iface.release(packet);
-}
-
-void Guud::Cp210x::read_reg_16(Usb::Interface &iface, Genode::uint8_t reg, Genode::uint16_t *value, Genode::uint16_t index)
-{
-    Usb::Packet_descriptor packet = iface.alloc(2);
-    Genode::uint8_t type = Usb::ENDPOINT_IN | Usb::TYPE_VENDOR | Usb::RECIPIENT_DEVICE;
-    iface.control_transfer(packet, type, reg, 0, index, 100);
-    *value = *(Genode::uint16_t*)iface.content(packet);
-    iface.release(packet);
-}
-
