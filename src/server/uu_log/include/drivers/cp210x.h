@@ -18,9 +18,8 @@ class Guud::Cp210x : public Guud::Uart
         template <typename T>
         void write_reg(Usb::Interface& iface, Genode::uint8_t reg, T value, Genode::uint16_t index = 0)
         {
-            Usb::Packet_descriptor packet = iface.alloc(sizeof(T));
+            Usb::Packet_descriptor packet = iface.alloc(0);
             Genode::uint8_t type = Usb::ENDPOINT_OUT | Usb::TYPE_VENDOR | Usb::RECIPIENT_DEVICE;
-            *(T*)iface.content(packet) = value;
             iface.control_transfer(packet, type, reg, value, index, 100);
             iface.release(packet);
         }
